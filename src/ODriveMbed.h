@@ -1,10 +1,11 @@
 
-#ifndef ODriveArduino_h
-#define ODriveArduino_h
+#ifndef ODriveMbed_h
+#define ODriveMbed_h
 
-#include "Arduino.h"
+#include "mbed.h"
+#include <string>
 
-class ODriveArduino {
+class ODriveMbed {
 public:
     enum AxisState_t {
         AXIS_STATE_UNDEFINED = 0,           //<! will fall through to idle
@@ -18,7 +19,7 @@ public:
         AXIS_STATE_CLOSED_LOOP_CONTROL = 8  //<! run closed loop control
     };
 
-    ODriveArduino(Stream& serial);
+    ODriveMbed(Stream& serial);
 
     // Commands
     void SetPosition(int motor_number, float position);
@@ -34,9 +35,9 @@ public:
     // State helper
     bool run_state(int axis, int requested_state, bool wait);
 private:
-    String readString();
+    string readString();
 
     Stream& serial_;
 };
 
-#endif //ODriveArduino_h
+#endif //ODriveMbed_h

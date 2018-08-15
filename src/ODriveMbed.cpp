@@ -1,6 +1,5 @@
 
-#include "Arduino.h"
-#include "ODriveArduino.h"
+#include "ODriveMbed.h"
 
 static const int kMotorOffsetFloat = 2;
 static const int kMotorStrideFloat = 28;
@@ -15,38 +14,38 @@ static const int kMotorStrideUint16 = 2;
 template<class T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
 template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(arg, 4); return obj; }
 
-ODriveArduino::ODriveArduino(Stream& serial)
+ODriveMbed::ODriveMbed(Stream& serial)
     : serial_(serial) {}
 
-void ODriveArduino::SetPosition(int motor_number, float position) {
+void ODriveMbed::SetPosition(int motor_number, float position) {
     SetPosition(motor_number, position, 0.0f, 0.0f);
 }
 
-void ODriveArduino::SetPosition(int motor_number, float position, float velocity_feedforward) {
+void ODriveMbed::SetPosition(int motor_number, float position, float velocity_feedforward) {
     SetPosition(motor_number, position, velocity_feedforward, 0.0f);
 }
 
-void ODriveArduino::SetPosition(int motor_number, float position, float velocity_feedforward, float current_feedforward) {
+void ODriveMbed::SetPosition(int motor_number, float position, float velocity_feedforward, float current_feedforward) {
     serial_ << "p " << motor_number  << " " << position << " " << velocity_feedforward << " " << current_feedforward << "\n";
 }
 
-void ODriveArduino::SetVelocity(int motor_number, float velocity) {
+void ODriveMbed::SetVelocity(int motor_number, float velocity) {
     SetVelocity(motor_number, velocity, 0.0f);
 }
 
-void ODriveArduino::SetVelocity(int motor_number, float velocity, float current_feedforward) {
+void ODriveMbed::SetVelocity(int motor_number, float velocity, float current_feedforward) {
     serial_ << "v " << motor_number  << " " << velocity << " " << current_feedforward << "\n";
 }
 
-float ODriveArduino::readFloat() {
+float ODriveMbed::readFloat() {
     return readString().toFloat();
 }
 
-int32_t ODriveArduino::readInt() {
+int32_t ODriveMbed::readInt() {
     return readString().toInt();
 }
 
-bool ODriveArduino::run_state(int axis, int requested_state, bool wait) {
+bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
     int timeout_ctr = 100;
     serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
     if (wait) {
@@ -59,8 +58,8 @@ bool ODriveArduino::run_state(int axis, int requested_state, bool wait) {
     return timeout_ctr > 0;
 }
 
-String ODriveArduino::readString() {
-    String str = "";
+string ODriveMbed::readString() {
+    string str = "";
     static const unsigned long timeout = 1000;
     unsigned long timeout_start = millis();
     for (;;) {
