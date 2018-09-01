@@ -38,11 +38,11 @@ void ODriveMbed::SetVelocity(int motor_number, float velocity, float current_fee
 }
 
 float ODriveMbed::readFloat() {
-    return readString().toFloat();
+    return atof(readString().c_str());
 }
 
 int32_t ODriveMbed::readInt() {
-    return readString().toInt();
+    return atoi(readString().c_str());
 }
 
 bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
@@ -50,7 +50,7 @@ bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
     serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
     if (wait) {
         do {
-            delay(100);
+            wait_ms(100);
             serial_ << "r axis" << axis << ".current_state\n";
         } while (readInt() != AXIS_STATE_IDLE && --timeout_ctr > 0);
     }
@@ -60,11 +60,13 @@ bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
 
 string ODriveMbed::readString() {
     string str = "";
-    static const unsigned long timeout = 1000;
-    unsigned long timeout_start = millis();
+    static const unsigned int timeout = 1000;
+    Timer t;
+    t.start();
+    unsigned int timeout_start = t.read_ms();
     for (;;) {
         while (!serial_.available()) {
-            if (millis() - timeout_start >= timeout) {
+            if (t.read_ms() - timeout_start >= timeout) {
                 return str;
             }
         }
@@ -73,5 +75,6 @@ string ODriveMbed::readString() {
             break;
         str += c;
     }
+    t.stop();
     return str;
 }
