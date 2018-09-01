@@ -1,5 +1,5 @@
 
-#include "ODriveMbed.h"
+#include "/Users/SeanHome/Projects/OdriveMbed/src/ODriveMbed.h"
 
 static const int kMotorOffsetFloat = 2;
 static const int kMotorStrideFloat = 28;
