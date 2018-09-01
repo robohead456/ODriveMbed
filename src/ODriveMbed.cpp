@@ -10,9 +10,6 @@ static const int kMotorStrideBool = 4;
 static const int kMotorOffsetUint16 = 0;
 static const int kMotorStrideUint16 = 2;
 
-// Print with stream operator
-template<class T> inline Print& operator <<(Print &obj,     T arg) { obj.print(arg);    return obj; }
-template<>        inline Print& operator <<(Print &obj, float arg) { obj.print(arg, 4); return obj; }
 
 ODriveMbed::ODriveMbed(Stream& serial)
     : serial_(serial) {}
@@ -26,7 +23,8 @@ void ODriveMbed::SetPosition(int motor_number, float position, float velocity_fe
 }
 
 void ODriveMbed::SetPosition(int motor_number, float position, float velocity_feedforward, float current_feedforward) {
-    serial_ << "p " << motor_number  << " " << position << " " << velocity_feedforward << " " << current_feedforward << "\n";
+    //serial_ << "p " << motor_number  << " " << position << " " << velocity_feedforward << " " << current_feedforward << "\n";
+    serial_.printf("p %d %f %f %f\n", motor_number, position, velocity_feedforward, current_feedforward);
 }
 
 void ODriveMbed::SetVelocity(int motor_number, float velocity) {
@@ -34,7 +32,8 @@ void ODriveMbed::SetVelocity(int motor_number, float velocity) {
 }
 
 void ODriveMbed::SetVelocity(int motor_number, float velocity, float current_feedforward) {
-    serial_ << "v " << motor_number  << " " << velocity << " " << current_feedforward << "\n";
+    //serial_ << "v " << motor_number  << " " << velocity << " " << current_feedforward << "\n";
+    serial_.printf("v%d %f %f\n", motor_number, velocity, current_feedforward);
 }
 
 float ODriveMbed::readFloat() {
@@ -47,11 +46,13 @@ int32_t ODriveMbed::readInt() {
 
 bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
     int timeout_ctr = 100;
-    serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
+    //serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
+    serial_.printf("w axis%d.requested_state %d\n", axis, requested_state);
     if (wait) {
         do {
             wait_ms(100);
-            serial_ << "r axis" << axis << ".current_state\n";
+            //serial_ << "r axis" << axis << ".current_state\n";
+            serial_.printf("r axis%d.current_state\n");
         } while (readInt() != AXIS_STATE_IDLE && --timeout_ctr > 0);
     }
 
@@ -65,12 +66,12 @@ string ODriveMbed::readString() {
     t.start();
     unsigned int timeout_start = t.read_ms();
     for (;;) {
-        while (!serial_.available()) {
+        while (!serial_.readable()) {
             if (t.read_ms() - timeout_start >= timeout) {
                 return str;
             }
         }
-        char c = serial_.read();
+        char c = serial_.getc();
         if (c == '\n')
             break;
         str += c;
