@@ -44,15 +44,15 @@ int32_t ODriveMbed::readInt() {
     return atoi(readString().c_str());
 }
 
-bool ODriveMbed::run_state(int axis, int requested_state, bool wait) {
+bool ODriveMbed::run_state(int axis, int requested_state, bool read_) {
     int timeout_ctr = 100;
     //serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
     serial_.printf("w axis%d.requested_state %d\n", axis, requested_state);
-    if (wait) {
+    if (read_) {
         do {
             wait_ms(100);
             //serial_ << "r axis" << axis << ".current_state\n";
-            serial_.printf("r axis%d.current_state\n");
+            serial_.printf("r axis%d.current_state\n",axis);
         } while (readInt() != AXIS_STATE_IDLE && --timeout_ctr > 0);
     }
 
