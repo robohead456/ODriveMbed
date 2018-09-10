@@ -37,7 +37,7 @@ void ODriveMbed::SetVelocity(int motor_number, float velocity, float current_fee
 }
 
 float ODriveMbed::readFloat() {
-    return atof(readString().c_str());
+    return (float)atof(readString().c_str());
 }
 
 int32_t ODriveMbed::readInt() {
@@ -61,7 +61,7 @@ bool ODriveMbed::run_state(int axis, int requested_state, bool read_) {
 
 string ODriveMbed::readString() {
     string str = "";
-    static const unsigned int timeout = 1000;
+    static const unsigned int timeout = 1000; // Value in milli-seconds
     Timer t;
     t.start();
     unsigned int timeout_start = t.read_ms();
