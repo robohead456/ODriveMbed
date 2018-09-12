@@ -1,9 +1,8 @@
 #include "OdriveMbed.h"
 #include <mbed.h>
-
-#define ODRIVE2TX PD_8
-#define ODRIVE2RX PD_9
- 
+// TODO: set these pins to be the correct ones for UART with ODrive
+#define ODRIVE2TX PG_14
+#define ODRIVE2RX PG_9
 
 Serial pc(USBTX, USBRX);
 Serial odrive_serial(ODRIVE2TX, ODRIVE2RX);
@@ -11,13 +10,14 @@ ODriveMbed odrive(odrive_serial);
 
 int main()
 {
-    wait(5);
+    // wait(5);
+    pc.printf("hello");
 
     odrive_serial.baud(115200);
 
     pc.baud(115200);
-    pc.printf("ODriveArduino\n");
-    pc.printf("Setting parameters...\n");
+    pc.puts("ODriveArduino\n");
+    pc.puts("Setting parameters...\n");
 
     /* Already verified that these commands print out to serial if
        odrive takes in pc serial object
@@ -50,75 +50,79 @@ int main()
     pc.puts("Send the character 's' to exectue test move\n");
     pc.puts("Send the character 'b' to read bus voltage\n");
     pc.puts("Send the character 'p' to read motor positions in a 10s loop\n");
-
-    if (pc.readable())
+    char c;
+    do 
     {
-        char c = pc.getc();
-
-        // Run calibration sequence
-        if (c == '0' || c == '1')
+        if (pc.readable())
         {
-            int motornum = c - '0';
-            int requested_state;
-
-            requested_state = ODriveMbed::AXIS_STATE_MOTOR_CALIBRATION;
-            // Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
-            pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
-            odrive.run_state(motornum, requested_state, true);
-
-            requested_state = ODriveMbed::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
-            // Serial << "Axis" << c << ": Requesting State " << requested_state << '\n';
-            pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
-            odrive.run_state(motornum, requested_state, true);
-
-            requested_state = ODriveMbed::AXIS_STATE_CLOSED_LOOP_CONTROL;
-            // Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
-            pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
-            odrive.run_state(motornum, requested_state, false); // don't wait
-        }
-
-        // Sinusoidal test move
-        if (c == 's')
-        {
-            pc.puts("Executing test move\n");
-            for (float ph = 0.0f; ph < 6.28318530718f; ph += 0.01f)
+            c = pc.getc();
+            // Run calibration sequence
+            if (c == '0' || c == '1')
             {
-                float pos_m0 = 20000.0f * cos(ph);
-                float pos_m1 = 20000.0f * sin(ph);
-                odrive.SetPosition(0, pos_m0);
-                odrive.SetPosition(1, pos_m1);
-                wait_ms(5000);
+                int motornum = c - '0';
+                int requested_state;
+
+                requested_state = ODriveMbed::AXIS_STATE_MOTOR_CALIBRATION;
+                // Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+                pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
+                odrive.run_state(motornum, requested_state, true);
+
+                requested_state = ODriveMbed::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
+                // Serial << "Axis" << c << ": Requesting State " << requested_state << '\n';
+                pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
+                odrive.run_state(motornum, requested_state, true);
+
+                requested_state = ODriveMbed::AXIS_STATE_CLOSED_LOOP_CONTROL;
+                // Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+                pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
+                odrive.run_state(motornum, requested_state, false); // don't wait
             }
-        }
 
-        // Read bus voltage
-        if (c == 'b')
-        {
-            odrive_serial.puts("r vbus_voltage\n");
-            // Serial << "Vbus voltage: " << odrive.readFloat() << '\n';
-            pc.printf("Vbus voltage: %f\n", odrive.readFloat());
-        }
-
-        // print motor positions in a 10s loop
-        if (c == 'p')
-        {
-            static const unsigned int duration = 10000;
-            Timer t;
-            t.start();
-            unsigned int start = t.read_ms();
-
-            while (t.read_ms() - start < duration)
+            // Sinusoidal test move
+            if (c == 's')
             {
-                for (int motor = 0; motor < 2; ++motor)
+                pc.puts("Executing test move\n");
+
+                for (float ph = 0.0f; ph < 6.28318530718f; ph += 0.01f)
                 {
-                    // odrive_serial << "r axis" << motor << ".encoder.pos_estimate\n";
-                    odrive_serial.printf("r axis%d.encoder.pos_estimate\n", motor);
-                    // Serial << odrive.readFloat() << '\t';
-                    pc.printf("%f\t", odrive.readFloat());
+                    float pos_m0 = 200.0f * cos(ph);
+                    float pos_m1 = 20000.0f * sin(ph);
+                    odrive.SetPosition(0, pos_m0);
+                    odrive.SetPosition(1, pos_m1);
+                    wait_ms(50);
                 }
-                // Serial << '\n';
-                pc.putc('\n');
+                pc.puts("Test Move Completed\n");
+            }
+
+            // Read bus voltage
+            if (c == 'b')
+            {
+                odrive_serial.puts("r vbus_voltage\n");
+                // Serial << "Vbus voltage: " << odrive.readFloat() << '\n';
+                pc.printf("Vbus voltage: %f\n", odrive.readFloat());
+            }
+
+            // print motor positions in a 10s loop
+            if (c == 'p')
+            {
+                static const unsigned int duration = 10000;
+                Timer t;
+                t.start();
+                unsigned int start = t.read_ms();
+
+                while (t.read_ms() - start < duration)
+                {
+                    for (int motor = 0; motor < 2; ++motor)
+                    {
+                        // odrive_serial << "r axis" << motor << ".encoder.pos_estimate\n";
+                        odrive_serial.printf("r axis%d.encoder.pos_estimate\n", motor);
+                        // Serial << odrive.readFloat() << '\t';
+                        pc.printf("%f\t", odrive.readFloat());
+                    }
+                    // Serial << '\n';
+                    pc.putc('\n');
+                }
             }
         }
-    }
+    } while (c != 'q');
 }
