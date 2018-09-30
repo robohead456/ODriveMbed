@@ -8,6 +8,8 @@ Serial pc(USBTX, USBRX);
 Serial odrive_serial(ODRIVE2TX, ODRIVE2RX);
 ODriveMbed odrive(odrive_serial);
 
+using namespace std;
+
 int main()
 {
     // wait(5);
@@ -50,6 +52,7 @@ int main()
     pc.puts("Send the character 's' to exectue test move\n");
     pc.puts("Send the character 'b' to read bus voltage\n");
     pc.puts("Send the character 'p' to read motor positions in a 10s loop\n");
+    pc.puts("Send the character 'd' to enter r a w debug mode\n");
     char c;
     do 
     {
@@ -121,6 +124,23 @@ int main()
                     }
                     // Serial << '\n';
                     pc.putc('\n');
+                }
+            }
+            
+            // r a w ASCII input
+            if (c == 'd')
+            {
+                std::string input;
+                pc.printf("Entering r a w input mode. Go crazy.\n"
+                while(1<2){ //im hilarious
+                    pc.printf("ODrive$>");
+                    pc.scanf("%s", input);
+                    if (input == ("Q" || "q" || "quit" || "exit" || "bye")){
+                        main(); //reset the program and start from the beginning
+                    }
+                    else {
+                        odrive_serial.printf("%s",input);
+                    }
                 }
             }
         }
