@@ -1,4 +1,4 @@
-#include "OdriveMbed.h"
+#include "ODriveMbed.h"
 #include <mbed.h>
 // TODO: set these pins to be the correct ones for UART with ODrive
 #define ODRIVE2TX PG_14
@@ -81,16 +81,22 @@ int main()
             // Sinusoidal test move
             if (c == 's')
             {
+                int requested_state = ODriveMbed::AXIS_STATE_CLOSED_LOOP_CONTROL;
+                // Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+                pc.printf("Axis%c: Requesting State %d\n", c, requested_state);
+                odrive.run_state(0, requested_state, false); // don't wait
                 pc.puts("Executing test move\n");
-
+                /*
                 for (float ph = 0.0f; ph < 6.28318530718f; ph += 0.01f)
                 {
-                    float pos_m0 = 200.0f * cos(ph);
+                    float pos_m0 = 20000.0f * cos(ph);
                     float pos_m1 = 20000.0f * sin(ph);
                     odrive.SetPosition(0, pos_m0);
                     odrive.SetPosition(1, pos_m1);
                     wait_ms(50);
                 }
+                */
+                odrive.SetPosition(0, 400000);
                 pc.puts("Test Move Completed\n");
             }
 

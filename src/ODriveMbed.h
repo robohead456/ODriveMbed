@@ -19,24 +19,41 @@ public:
         AXIS_STATE_CLOSED_LOOP_CONTROL = 8  //<! run closed loop control
     };
 
+    enum ControlMode_t{
+        CTRL_MODE_VOLTAGE_CONTROL = 0,
+        CTRL_MODE_CURRENT_CONTROL = 1,
+        CTRL_MODE_VELOCITY_CONTROL = 2,
+        CTRL_MODE_POSITION_CONTROL = 3,
+        CTRL_MODE_TRAJECTORY_CONTROL = 4
+    };
+    
     ODriveMbed(Stream& serial);
 
     // Commands
-    void SetPosition(int motor_number, float position);
-    void SetPosition(int motor_number, float position, float velocity_feedforward);
-    void SetPosition(int motor_number, float position, float velocity_feedforward, float current_feedforward);
-    void SetVelocity(int motor_number, float velocity);
-    void SetVelocity(int motor_number, float velocity, float current_feedforward);
+    void setPosition(int motor_number, float position);
+    void setPosition(int motor_number, float position, float velocity_feedforward);
+    void setPosition(int motor_number, float position, float velocity_feedforward, float current_feedforward);
+    void setVelocity(int motor_number, float velocity);
+    void setVelocity(int motor_number, float velocity, float current_feedforward);
+    void setCurrent(int motor_number, float current);
+
+    float getPositionEstimate(int axis);
+    float getCurrentEstimate(int axis);
 
     // General params
     float readFloat();
     int32_t readInt();
 
+    // Control Mode Helpers
+    bool setControlMode(int axis, int requestedControlMode, bool readResult);
+    int readControlMode(int axis);
     // State helper
     bool run_state(int axis, int requested_state, bool wait);
+
 private:
     string readString();
 
+    int _timeoutTime = 10; // in ms
     Stream& serial_;
 };
 
