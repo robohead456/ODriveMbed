@@ -47,6 +47,8 @@ public:
     // Control Mode Helpers
     bool setControlMode(int axis, int requestedControlMode, bool readResult);
     int readControlMode(int axis);
+    int readState(int axis);
+
     // State helper
     bool run_state(int axis, int requested_state, bool wait);
 

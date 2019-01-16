@@ -97,7 +97,7 @@ bool ODriveMbed::setControlMode(int axis, int requestedControlMode, bool read_){
         do {
             wait_ms(_timeoutTime);
             //serial_ << "r axis" << axis << ".current_state\n";
-            serial_.printf("r axis%d.controller.config.control_mode %d\n",axis);
+            serial_.printf("r axis%d.controller.config.control_mode\n",axis);
             
         } while (readInt() != requestedControlMode && --timeout_ctr > 0);
     }
@@ -106,7 +106,12 @@ bool ODriveMbed::setControlMode(int axis, int requestedControlMode, bool read_){
 }
 
 int ODriveMbed::readControlMode(int axis){
-    serial_.printf("r axis%d.controller.config.control_mode %d\n",axis);
+    serial_.printf("r axis%d.controller.config.control_mode\n",axis);
+    return readInt();
+}
+
+int ODriveMbed::readState(int axis){
+    serial_.printf("r axis%d.current_state\n",axis);
     return readInt();
 }
 
