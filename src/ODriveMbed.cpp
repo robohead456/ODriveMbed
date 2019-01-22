@@ -111,8 +111,15 @@ int ODriveMbed::readControlMode(int axis){
 }
 
 int ODriveMbed::readState(int axis){
-    serial_.printf("r axis%d.current_state\n",axis);
-    return readInt();
+    int timeout_ctr = 5;
+    float current = 433223465.0f;
+        do {
+            wait_ms(_timeoutTime);
+            //serial_ << "r axis" << axis << ".current_state\n";
+            serial_.printf("r axis%d.current_state\n",axis);
+            current = readInt();
+        } while (--timeout_ctr > 0);
+    return current;
 }
 
 string ODriveMbed::readString() {
