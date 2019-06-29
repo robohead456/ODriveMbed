@@ -1,18 +1,9 @@
 
 #include "ODriveMbed.h"
 
-static const int kMotorOffsetFloat = 2;
-static const int kMotorStrideFloat = 28;
-static const int kMotorOffsetInt32 = 0;
-static const int kMotorStrideInt32 = 4;
-static const int kMotorOffsetBool = 0;
-static const int kMotorStrideBool = 4;
-static const int kMotorOffsetUint16 = 0;
-static const int kMotorStrideUint16 = 2;
-
-
-ODriveMbed::ODriveMbed(Stream& serial) 
-    : serial_(serial) {}
+ODriveMbed::ODriveMbed(Stream& serial) : serial_(serial) {
+    _timeoutTime = 10;
+}
 
 void ODriveMbed::setPosition(int motor_number, float position) {
     setPosition(motor_number, position, 0.0f, 0.0f);
@@ -91,12 +82,12 @@ bool ODriveMbed::run_state(int axis, int requested_state, bool read_) {
 
 bool ODriveMbed::setControlMode(int axis, int requestedControlMode, bool read_){
     int timeout_ctr = 100;
-    //serial_ << "w axis" << axis << ".requested_state " << requested_state << '\n';
+
     serial_.printf("w axis%d.controller.config.control_mode %d\n", axis, requestedControlMode);
     if (read_) {
         do {
             wait_ms(_timeoutTime);
-            //serial_ << "r axis" << axis << ".current_state\n";
+            
             serial_.printf("r axis%d.controller.config.control_mode\n",axis);
             
         } while (readInt() != requestedControlMode && --timeout_ctr > 0);
